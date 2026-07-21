@@ -3,69 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrarian Investor Dashboard</title>
+    <title>Contrarian Investor Dashboard V7</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        h1 { color: #38bdf8; text-align: center; }
-        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; }
-        .loading { text-align: center; font-size: 1.2rem; color: #38bdf8; }
-        table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
-        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; }
-        th { background-color: #0284c7; color: white; font-weight: 600; }
-        tr:hover { background-color: #334155; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; display: inline-block; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            padding: 40px;
+        }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            background-color: #1e293b;
+            padding: 16px 20px;
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto; /* Enables horizontal scroll for many columns */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background-color: #334155;
+        }
+
+        code {
+            background-color: #0f172a;
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .badge {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .status-strong-buy { background-color: #065f46; color: #a7f3d0; }
+        .status-bleeding { background-color: #881337; color: #fecdd3; }
+        .status-fomo { background-color: #991b1b; color: #fca5a5; }
+        .status-neutral { background-color: #334155; color: #cbd5e1; }
+
+        .negative { color: #f87171; font-weight: 500; }
+        .positive { color: #4ade80; font-weight: 500; }
     </style>
 </head>
 <body>
 
-    <h1>📊 Contrarian ISA & SIPP Dashboard</h1>
-    <p class="subtitle">Live tracking metrics via Google Sheets API</p>
+    <div class="header">
+        <h1>📊 Contrarian Investor Dashboard</h1>
+        <p>Live technical signals & valuation metrics via Google Sheets API</p>
+    </div>
 
-    <div id="loading" class="loading">Fetching live market data...</div>
-    <div id="table-container"></div>
+    <div id="loading" class="loading">⏳ Fetching live market data from Google Sheets...</div>
+    <div id="dashboard-content"></div>
 
     <script>
         // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
         const API_URL = "https://script.google.com/macros/s/AKfycbx7a59SNkSNUQINzOvNV46AUrvM4vCCxfvvHLzraYpsE9DqqE8VYnGKhyLOlBUyRo-6/exec";
 
-        async function loadData() {
+        function formatPct(val) {
+            if (val === "" || val === null || isNaN(val)) return "-";
+            const num = parseFloat(val) * 100;
+            const cls = num < 0 ? "negative" : "positive";
+            return `<span class="${cls}">${num.toFixed(2)}%</span>`;
+        }
+
+        function formatNum(val, decimals = 2) {
+            if (val === "" || val === null || isNaN(val)) return "-";
+            return parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+
+        function getStatusBadgeClass(status) {
+            if (!status) return "status-neutral";
+            if (status.includes("STRONG BUY")) return "status-strong-buy";
+            if (status.includes("BLEEDING")) return "status-bleeding";
+            if (status.includes("FOMO")) return "status-fomo";
+            return "status-neutral";
+        }
+
+        function createTable(rows) {
+            let html = `
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset Name</th>
+                            <th>Ticker</th>
+                            <th>Status</th>
+                            <th>Theme</th>
+                            <th>Target</th>
+                            <th>Current Price</th>
+                            <th>52W High</th>
+                            <th>52W Low</th>
+                            <th>% Off High</th>
+                            <th>% Up Low</th>
+                            <th>50d MA</th>
+                            <th>200d MA</th>
+                            <th>% vs 200d MA</th>
+                            <th>P/E</th>
+                            <th>Yield</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            rows.forEach(r => {
+                const badgeClass = getStatusBadgeClass(r[2]);
+                html += `
+                <tr>
+                    <td><b>${r[0] || "-"}</b></td>
+                    <td><code>${r[1] || "-"}</code></td>
+                    <td><span class="badge ${badgeClass}">${r[2] || "⚪ NEUTRAL"}</span></td>
+                    <td>${r[3] || "-"}</td>
+                    <td><b>${formatPct(r[4])}</b></td>
+                    <td><b>${formatNum(r[5])}</b></td>
+                    <td>${formatNum(r[6])}</td>
+                    <td>${formatNum(r[7])}</td>
+                    <td>${formatPct(r[8])}</td>
+                    <td>${formatPct(r[9])}</td>
+                    <td>${formatNum(r[10])}</td>
+                    <td>${formatNum(r[11])}</td>
+                    <td>${formatPct(r[12])}</td>
+                    <td>${formatNum(r[14])}</td>
+                    <td>${formatPct(r[15])}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        async function loadDashboard() {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
                 document.getElementById('loading').style.display = 'none';
-                
-                let html = '<table>';
-                
-                // Search for the main header row (where Column A is "Asset Name")
-                let headerFound = false;
-                
-                data.forEach((row) => {
-                    if (row[0] === "Asset Name") {
-                        headerFound = true;
-                        html += '<thead><tr>';
-                        html += `<th>${row[0]}</th><th>${row[1]}</th><th>${row[2]}</th><th>${row[3]}</th><th>${row[5]}</th><th>${row[8]}</th>`;
-                        html += '</tr></thead><tbody>';
-                    } else if (headerFound && row[0] && row[1] && row[0] !== "Core Blue-Chips & Tech" && row[0] !== "High Volatility & Emerging Markets") {
-                        html += '<tr>';
-                        html += `<td><b>${row[0]}</b></td>`;
-                        html += `<td><code>${row[1]}</code></td>`;
-                        html += `<td><span class="badge">${row[2]}</span></td>`;
-                        html += `<td>${row[3]}</td>`;
-                        html += `<td>${row[5]}</td>`;
-                        html += `<td>${(row[8] * 100).toFixed(2)}%</td>`;
-                        html += '</tr>';
+
+                let section1Rows = [];
+                let section2Rows = [];
+                let macroRows = [];
+
+                let currentSection = 1;
+
+                data.forEach(row => {
+                    const name = row[0] ? row[0].toString() : "";
+                    const ticker = row[1] ? row[1].toString() : "";
+
+                    // Detect Section Headers
+                    if (name.includes("High Volatility")) {
+                        currentSection = 2;
+                        return;
+                    }
+
+                    if (ticker.includes("CURRENCY:")) {
+                        macroRows.push(row);
+                        return;
+                    }
+
+                    // Ignore cheat sheet text or column header rows
+                    if (ticker && ticker !== "Ticker" && !name.includes("STRATEGY CHEAT")) {
+                        if (currentSection === 1) {
+                            section1Rows.push(row);
+                        } else {
+                            section2Rows.push(row);
+                        }
                     }
                 });
-                
-                html += '</tbody></table>';
-                document.getElementById('table-container').innerHTML = html;
+
+                let contentHtml = "";
+
+                // SECTION 1
+                if (section1Rows.length > 0) {
+                    contentHtml += `
+                    <div class="section-card">
+                        <h2 class="section-title">🔷 Core Blue-Chips & Broad Sectors <span>Target Drop: -20%</span></h2>
+                        ${createTable(section1Rows)}
+                    </div>`;
+                }
+
+                // SECTION 2
+                if (section2Rows.length > 0) {
+                    contentHtml += `
+                    <div class="section-card">
+                        <h2 class="section-title">🔶 High Volatility & Emerging Markets <span>Target Drop: -35%</span></h2>
+                        ${createTable(section2Rows)}
+                    </div>`;
+                }
+
+                document.getElementById('dashboard-content').innerHTML = contentHtml;
+
             } catch (error) {
-                document.getElementById('loading').innerHTML = "❌ Error loading data. Ensure Apps Script is deployed to 'Anyone'.";
+                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data. Make sure Apps Script is deployed to 'Anyone'.";
+                console.error(error);
             }
         }
 
-        loadData();
+        loadDashboard();
     </script>
 </body>
 </html>

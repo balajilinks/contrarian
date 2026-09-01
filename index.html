@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrarian Investor Dashboard V7</title>
+    <title>Contrarian Investor Dashboard V9</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -15,35 +15,17 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
             padding: 24px;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .header h1 {
-            color: var(--accent-blue);
-            margin-bottom: 8px;
-            font-size: 2rem;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        .loading {
-            text-align: center;
-            font-size: 1.2rem;
-            color: var(--accent-blue);
-            padding: 40px;
-        }
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h1 { color: var(--accent-blue); margin-bottom: 8px; font-size: 2rem; }
+        .header p { color: var(--text-muted); margin: 0; }
+        .loading { text-align: center; font-size: 1.2rem; color: var(--accent-blue); padding: 40px; }
 
         .section-card {
             background-color: var(--card-bg);
@@ -66,60 +48,19 @@
             justify-content: space-between;
         }
 
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto; /* Enables horizontal scroll for many columns */
-        }
+        .table-wrapper { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.9rem; }
+        th { background-color: #0f172a; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        tr:hover { background-color: #334155; }
+        code { background-color: #0f172a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            white-space: nowrap;
-            font-size: 0.9rem;
-        }
-
-        th {
-            background-color: #0f172a;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tr:hover {
-            background-color: #334155;
-        }
-
-        code {
-            background-color: #0f172a;
-            color: #38bdf8;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-
-        .badge {
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            display: inline-block;
-        }
-
+        .badge { font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; display: inline-block; }
         .status-strong-buy { background-color: #065f46; color: #a7f3d0; }
         .status-bleeding { background-color: #881337; color: #fecdd3; }
         .status-fomo { background-color: #991b1b; color: #fca5a5; }
         .status-neutral { background-color: #334155; color: #cbd5e1; }
+        .status-tech { background-color: #1e40af; color: #bfdbfe; }
 
         .negative { color: #f87171; font-weight: 500; }
         .positive { color: #4ade80; font-weight: 500; }
@@ -129,14 +70,13 @@
 
     <div class="header">
         <h1>📊 Contrarian Investor Dashboard</h1>
-        <p>Live technical signals & valuation metrics via Google Sheets API</p>
+        <p>Live technical signals, daily changes & valuation metrics via Google Sheets API</p>
     </div>
 
     <div id="loading" class="loading">⏳ Fetching live market data from Google Sheets...</div>
     <div id="dashboard-content"></div>
 
     <script>
-        // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
         const API_URL = "https://script.google.com/macros/s/AKfycbx7a59SNkSNUQINzOvNV46AUrvM4vCCxfvvHLzraYpsE9DqqE8VYnGKhyLOlBUyRo-6/exec";
 
         function formatPct(val) {
@@ -156,6 +96,7 @@
             if (status.includes("STRONG BUY")) return "status-strong-buy";
             if (status.includes("BLEEDING")) return "status-bleeding";
             if (status.includes("FOMO")) return "status-fomo";
+            if (status.includes("TECH ROTATION")) return "status-tech";
             return "status-neutral";
         }
 
@@ -170,7 +111,8 @@
                             <th>Status</th>
                             <th>Theme</th>
                             <th>Target</th>
-                            <th>Current Price</th>
+                            <th>Price</th>
+                            <th>Today's Chg</th>
                             <th>52W High</th>
                             <th>52W Low</th>
                             <th>% Off High</th>
@@ -194,15 +136,16 @@
                     <td>${r[3] || "-"}</td>
                     <td><b>${formatPct(r[4])}</b></td>
                     <td><b>${formatNum(r[5])}</b></td>
-                    <td>${formatNum(r[6])}</td>
+                    <td><b>${formatPct(r[6])}</b></td>
                     <td>${formatNum(r[7])}</td>
-                    <td>${formatPct(r[8])}</td>
+                    <td>${formatNum(r[8])}</td>
                     <td>${formatPct(r[9])}</td>
-                    <td>${formatNum(r[10])}</td>
+                    <td>${formatPct(r[10])}</td>
                     <td>${formatNum(r[11])}</td>
-                    <td>${formatPct(r[12])}</td>
-                    <td>${formatNum(r[14])}</td>
-                    <td>${formatPct(r[15])}</td>
+                    <td>${formatNum(r[12])}</td>
+                    <td>${formatPct(r[13])}</td>
+                    <td>${formatNum(r[15])}</td>
+                    <td>${formatPct(r[16])}</td>
                 </tr>`;
             });
 
@@ -217,62 +160,36 @@
                 
                 document.getElementById('loading').style.display = 'none';
 
-                let section1Rows = [];
-                let section2Rows = [];
-                let macroRows = [];
-
+                let sec1 = [], sec2 = [], sec3 = [], sec4 = [];
                 let currentSection = 1;
 
                 data.forEach(row => {
                     const name = row[0] ? row[0].toString() : "";
                     const ticker = row[1] ? row[1].toString() : "";
 
-                    // Detect Section Headers
-                    if (name.includes("High Volatility")) {
-                        currentSection = 2;
-                        return;
-                    }
+                    if (name.includes("Core Blue-Chips")) { currentSection = 2; return; }
+                    if (name.includes("High Volatility")) { currentSection = 3; return; }
+                    if (name.includes("Hyper-Speculative")) { currentSection = 4; return; }
 
-                    if (ticker.includes("CURRENCY:")) {
-                        macroRows.push(row);
-                        return;
-                    }
-
-                    // Ignore cheat sheet text or column header rows
-                    if (ticker && ticker !== "Ticker" && !name.includes("STRATEGY CHEAT")) {
-                        if (currentSection === 1) {
-                            section1Rows.push(row);
-                        } else {
-                            section2Rows.push(row);
-                        }
+                    if (ticker && ticker !== "Ticker" && !name.includes("STRATEGY CHEAT") && !ticker.includes("CURRENCY:")) {
+                        if (currentSection === 1) sec1.push(row);
+                        else if (currentSection === 2) sec2.push(row);
+                        else if (currentSection === 3) sec3.push(row);
+                        else if (currentSection === 4) sec4.push(row);
                     }
                 });
 
                 let contentHtml = "";
 
-                // SECTION 1
-                if (section1Rows.length > 0) {
-                    contentHtml += `
-                    <div class="section-card">
-                        <h2 class="section-title">🔷 Core Blue-Chips & Broad Sectors <span>Target Drop: -20%</span></h2>
-                        ${createTable(section1Rows)}
-                    </div>`;
-                }
-
-                // SECTION 2
-                if (section2Rows.length > 0) {
-                    contentHtml += `
-                    <div class="section-card">
-                        <h2 class="section-title">🔶 High Volatility & Emerging Markets <span>Target Drop: -35%</span></h2>
-                        ${createTable(section2Rows)}
-                    </div>`;
-                }
+                if (sec1.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🌐 Macro Indices & Relative Ratios <span>Target Drop: -10%</span></h2>${createTable(sec1)}</div>`;
+                if (sec2.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔷 Core Blue-Chips & Broad Tech <span>Target Drop: -20%</span></h2>${createTable(sec2)}</div>`;
+                if (sec3.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔶 High Volatility & Emerging Markets <span>Target Drop: -35%</span></h2>${createTable(sec3)}</div>`;
+                if (sec4.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔥 Hyper-Speculative & Wild Assets <span>Target Drop: -50%</span></h2>${createTable(sec4)}</div>`;
 
                 document.getElementById('dashboard-content').innerHTML = contentHtml;
 
             } catch (error) {
-                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data. Make sure Apps Script is deployed to 'Anyone'.";
-                console.error(error);
+                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data.";
             }
         }
 

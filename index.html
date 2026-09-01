@@ -64,6 +64,10 @@
 
         .negative { color: #f87171; font-weight: 500; }
         .positive { color: #4ade80; font-weight: 500; }
+
+        .cheat-sheet-content { padding: 20px; line-height: 1.8; color: #cbd5e1; font-size: 0.95rem; }
+        .cheat-sheet-rule { font-weight: 600; color: #38bdf8; margin-top: 12px; margin-bottom: 4px; }
+        .cheat-sheet-subrule { margin-left: 20px; margin-top: 2px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -161,17 +165,31 @@
                 document.getElementById('loading').style.display = 'none';
 
                 let sec1 = [], sec2 = [], sec3 = [], sec4 = [];
+                let cheatSheetLines = [];
+                let isCheatSheet = true;
                 let currentSection = 1;
 
                 data.forEach(row => {
-                    const name = row[0] ? row[0].toString() : "";
-                    const ticker = row[1] ? row[1].toString() : "";
+                    const name = row[0] ? row[0].toString().trim() : "";
+                    const ticker = row[1] ? row[1].toString().trim() : "";
 
+                    // Capture Cheat Sheet rows at the top of the sheet
+                    if (name === "Asset Name") {
+                        isCheatSheet = false;
+                        return;
+                    }
+
+                    if (isCheatSheet && name !== "") {
+                        cheatSheetLines.push(name);
+                        return;
+                    }
+
+                    // Section Detection
                     if (name.includes("Core Blue-Chips")) { currentSection = 2; return; }
                     if (name.includes("High Volatility")) { currentSection = 3; return; }
                     if (name.includes("Hyper-Speculative")) { currentSection = 4; return; }
 
-                    if (ticker && ticker !== "Ticker" && !name.includes("STRATEGY CHEAT") && !ticker.includes("CURRENCY:")) {
+                    if (ticker && ticker !== "Ticker" && !ticker.includes("CURRENCY:")) {
                         if (currentSection === 1) sec1.push(row);
                         else if (currentSection === 2) sec2.push(row);
                         else if (currentSection === 3) sec3.push(row);
@@ -185,6 +203,28 @@
                 if (sec2.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔷 Core Blue-Chips & Broad Tech <span>Target Drop: -20%</span></h2>${createTable(sec2)}</div>`;
                 if (sec3.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔶 High Volatility & Emerging Markets <span>Target Drop: -35%</span></h2>${createTable(sec3)}</div>`;
                 if (sec4.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔥 Hyper-Speculative & Wild Assets <span>Target Drop: -50%</span></h2>${createTable(sec4)}</div>`;
+
+                // Render Strategy Cheat Sheet Card at the bottom
+                if (cheatSheetLines.length > 0) {
+                    contentHtml += `
+                    <div class="section-card">
+                        <h2 class="section-title">📋 Strategy Rules & Execution Framework</h2>
+                        <div class="cheat-sheet-content">`;
+                    
+                    cheatSheetLines.forEach(line => {
+                        if (line.includes("STRATEGY CHEAT SHEET")) {
+                            return; // Header handled by section-title
+                        } else if (/^\d\./.test(line)) {
+                            contentHtml += `<div class="cheat-sheet-rule">${line}</div>`;
+                        } else if (line.startsWith("-")) {
+                            contentHtml += `<div class="cheat-sheet-subrule">${line}</div>`;
+                        } else {
+                            contentHtml += `<div>${line}</div>`;
+                        }
+                    });
+
+                    contentHtml += `</div></div>`;
+                }
 
                 document.getElementById('dashboard-content').innerHTML = contentHtml;
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrarian Investor Dashboard V12</title>
+    <title>Contrarian Investor Dashboard V13</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -103,35 +103,6 @@
 
         .reset-btn:hover { background-color: #0284c7; color: white; }
 
-        /* Filter Tabs */
-        .filter-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-
-        .filter-btn {
-            background-color: var(--card-bg);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn:hover { background-color: #334155; color: #fff; }
-        .filter-btn.active {
-            background-color: #0284c7;
-            color: #ffffff;
-            border-color: #38bdf8;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-        }
-
         .section-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -139,6 +110,18 @@
             margin-bottom: 32px;
             overflow: hidden;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            background-color: #1e293b;
+            padding: 16px 20px;
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .table-wrapper { width: 100%; overflow-x: auto; }
@@ -164,15 +147,6 @@
         tr:hover { background-color: #334155; }
         code { background-color: #0f172a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 
-        .tier-tag {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            background-color: #0f172a;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
         .badge { font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 0.78rem; display: inline-block; }
         .status-strong-buy { background-color: #065f46; color: #a7f3d0; }
         .status-bleeding { background-color: #881337; color: #fecdd3; }
@@ -192,10 +166,10 @@
 
     <div class="header">
         <h1>📊 Contrarian Investor Master Dashboard</h1>
-        <p>Interactive Target Sliders • Click headers to sort • Filter by risk tier</p>
+        <p>Dynamic What-If Simulation • Independent Section Sorting</p>
     </div>
 
-    <!-- Interactive Range Sliders -->
+    <!-- Sliders -->
     <div class="panel-card">
         <div class="panel-title">🎛️ What-If Simulation (Adjust Target Drop Sliders)</div>
         <div class="panel-inputs">
@@ -223,15 +197,6 @@
         </div>
     </div>
 
-    <!-- Tier Filter Tabs -->
-    <div class="filter-container">
-        <button class="filter-btn active" onclick="setFilter('ALL', event)">🌐 All Assets</button>
-        <button class="filter-btn" onclick="setFilter('TIER1', event)">Macro Indices (-10%)</button>
-        <button class="filter-btn" onclick="setFilter('TIER2', event)">Blue-Chips & Tech (-20%)</button>
-        <button class="filter-btn" onclick="setFilter('TIER3', event)">Volatile & EMs (-35%)</button>
-        <button class="filter-btn" onclick="setFilter('TIER4', event)">Wild Assets (-50%)</button>
-    </div>
-
     <div id="loading" class="loading">⏳ Fetching live market data from Google Sheets...</div>
     <div id="dashboard-content"></div>
 
@@ -240,12 +205,25 @@
 
         let cheatSheetLines = [];
         let parsedData = [];
-        let currentFilter = 'ALL';
-        let sortCol = null;
-        let sortAsc = true;
 
+        // Tier Target Overrides
         let tierOverrides = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
         const DEFAULT_TIER_TARGETS = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
+
+        // Independent Sort State for Each Section
+        let sectionSort = {
+            TIER1: { col: null, asc: true },
+            TIER2: { col: null, asc: true },
+            TIER3: { col: null, asc: true },
+            TIER4: { col: null, asc: true }
+        };
+
+        const SECTION_META = [
+            { key: 'TIER1', title: '🌐 Macro Indices & Relative Ratios' },
+            { key: 'TIER2', title: '🔷 Core Blue-Chips & Broad Tech' },
+            { key: 'TIER3', title: '🔶 High Volatility & Emerging Markets' },
+            { key: 'TIER4', title: '🔥 Hyper-Speculative & Wild Assets' }
+        ];
 
         function formatPct(val) {
             if (val === "" || val === null || isNaN(val)) return "-";
@@ -337,7 +315,7 @@
         function handleSliderChange(tierKey, val) {
             document.getElementById(`val-${tierKey}`).innerText = `${val}%`;
             tierOverrides[tierKey] = parseFloat(val) / 100;
-            renderTable();
+            renderTables();
         }
 
         function resetDefaults() {
@@ -347,101 +325,113 @@
                 document.getElementById(`input-${key}`).value = defaults[key];
                 document.getElementById(`val-${key}`).innerText = `${defaults[key]}%`;
             }
-            renderTable();
+            renderTables();
         }
 
-        function handleSort(key) {
-            if (sortCol === key) sortAsc = !sortAsc;
-            else { sortCol = key; sortAsc = true; }
-            renderTable();
-        }
-
-        function setFilter(tierKey, evt) {
-            currentFilter = tierKey;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            evt.target.classList.add('active');
-            renderTable();
-        }
-
-        function renderTable() {
-            let filtered = parsedData.filter(item => currentFilter === 'ALL' || item.tierKey === currentFilter);
-
-            filtered.forEach(item => {
-                item.status = computeDynamicStatus(item);
-                item.currentTarget = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
-            });
-
-            if (sortCol) {
-                filtered.sort((a, b) => {
-                    let valA = a[sortCol];
-                    let valB = b[sortCol];
-                    if (valA === null) return 1;
-                    if (valB === null) return -1;
-                    if (typeof valA === 'string') return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                    return sortAsc ? valA - valB : valB - valA;
-                });
+        function handleSectionSort(tierKey, colKey) {
+            if (sectionSort[tierKey].col === colKey) {
+                sectionSort[tierKey].asc = !sectionSort[tierKey].asc;
+            } else {
+                sectionSort[tierKey].col = colKey;
+                sectionSort[tierKey].asc = true;
             }
+            renderTables();
+        }
 
-            const getSortIcon = (key) => {
-                if (sortCol !== key) return '<span class="sort-icon">↕</span>';
-                return sortAsc ? '<span class="sort-icon">▲</span>' : '<span class="sort-icon">▼</span>';
-            };
+        function renderTables() {
+            let contentHtml = "";
 
-            let html = `
-            <div class="section-card">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th onclick="handleSort('name')">Asset Name ${getSortIcon('name')}</th>
-                                <th onclick="handleSort('ticker')">Ticker ${getSortIcon('ticker')}</th>
-                                <th onclick="handleSort('status')">Status ${getSortIcon('status')}</th>
-                                <th onclick="handleSort('tierLabel')">Tier ${getSortIcon('tierLabel')}</th>
-                                <th onclick="handleSort('theme')">Theme ${getSortIcon('theme')}</th>
-                                <th onclick="handleSort('currentTarget')">Target ${getSortIcon('currentTarget')}</th>
-                                <th onclick="handleSort('price')">Price ${getSortIcon('price')}</th>
-                                <th onclick="handleSort('todayChg')">Today's Chg ${getSortIcon('todayChg')}</th>
-                                <th onclick="handleSort('high52')">52W High ${getSortIcon('high52')}</th>
-                                <th onclick="handleSort('low52')">52W Low ${getSortIcon('low52')}</th>
-                                <th onclick="handleSort('offHigh')">% Off High ${getSortIcon('offHigh')}</th>
-                                <th onclick="handleSort('upLow')">% Up Low ${getSortIcon('upLow')}</th>
-                                <th onclick="handleSort('ma50')">50d MA ${getSortIcon('ma50')}</th>
-                                <th onclick="handleSort('ma200')">200d MA ${getSortIcon('ma200')}</th>
-                                <th onclick="handleSort('vsMa200')">% vs 200d ${getSortIcon('vsMa200')}</th>
-                                <th onclick="handleSort('pe')">P/E ${getSortIcon('pe')}</th>
-                                <th onclick="handleSort('yieldVal')">Yield ${getSortIcon('yieldVal')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
+            SECTION_META.forEach(sec => {
+                const tierKey = sec.key;
+                let items = parsedData.filter(i => i.tierKey === tierKey);
 
-            filtered.forEach(r => {
-                const badgeClass = getStatusBadgeClass(r.status);
-                html += `
-                <tr>
-                    <td><b>${r.name}</b></td>
-                    <td><code>${r.ticker}</code></td>
-                    <td><span class="badge ${badgeClass}">${r.status}</span></td>
-                    <td><span class="tier-tag">${r.tierLabel}</span></td>
-                    <td>${r.theme}</td>
-                    <td><b>${formatPct(r.currentTarget)}</b></td>
-                    <td><b>${formatNum(r.price)}</b></td>
-                    <td><b>${formatPct(r.todayChg)}</b></td>
-                    <td>${formatNum(r.high52)}</td>
-                    <td>${formatNum(r.low52)}</td>
-                    <td>${formatPct(r.offHigh)}</td>
-                    <td>${formatPct(r.upLow)}</td>
-                    <td>${formatNum(r.ma50)}</td>
-                    <td>${formatNum(r.ma200)}</td>
-                    <td>${formatPct(r.vsMa200)}</td>
-                    <td>${formatNum(r.pe)}</td>
-                    <td>${formatPct(r.yieldVal)}</td>
-                </tr>`;
+                if (items.length === 0) return;
+
+                // Recompute signals live based on sliders
+                items.forEach(item => {
+                    item.status = computeDynamicStatus(item);
+                    item.currentTarget = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
+                });
+
+                // Apply Section-Specific Sort
+                const sortState = sectionSort[tierKey];
+                if (sortState.col) {
+                    items.sort((a, b) => {
+                        let valA = a[sortState.col];
+                        let valB = b[sortState.col];
+                        if (valA === null) return 1;
+                        if (valB === null) return -1;
+                        if (typeof valA === 'string') return sortState.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                        return sortState.asc ? valA - valB : valB - valA;
+                    });
+                }
+
+                const getSortIcon = (colKey) => {
+                    if (sortState.col !== colKey) return '<span class="sort-icon">↕</span>';
+                    return sortState.asc ? '<span class="sort-icon">▲</span>' : '<span class="sort-icon">▼</span>';
+                };
+
+                const currentTargetPct = (tierOverrides[tierKey] * 100).toFixed(0);
+
+                contentHtml += `
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <span>${sec.title}</span>
+                        <span style="font-size: 0.85rem; color: #38bdf8;">Target Drop: ${currentTargetPct}%</span>
+                    </h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th onclick="handleSectionSort('${tierKey}', 'name')">Asset Name ${getSortIcon('name')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'ticker')">Ticker ${getSortIcon('ticker')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'status')">Status ${getSortIcon('status')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'theme')">Theme ${getSortIcon('theme')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'currentTarget')">Target ${getSortIcon('currentTarget')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'price')">Price ${getSortIcon('price')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'todayChg')">Today's Chg ${getSortIcon('todayChg')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'high52')">52W High ${getSortIcon('high52')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'low52')">52W Low ${getSortIcon('low52')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'offHigh')">% Off High ${getSortIcon('offHigh')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'upLow')">% Up Low ${getSortIcon('upLow')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'ma50')">50d MA ${getSortIcon('ma50')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'ma200')">200d MA ${getSortIcon('ma200')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'vsMa200')">% vs 200d ${getSortIcon('vsMa200')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'pe')">P/E ${getSortIcon('pe')}</th>
+                                    <th onclick="handleSectionSort('${tierKey}', 'yieldVal')">Yield ${getSortIcon('yieldVal')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                items.forEach(r => {
+                    const badgeClass = getStatusBadgeClass(r.status);
+                    contentHtml += `
+                    <tr>
+                        <td><b>${r.name}</b></td>
+                        <td><code>${r.ticker}</code></td>
+                        <td><span class="badge ${badgeClass}">${r.status}</span></td>
+                        <td>${r.theme}</td>
+                        <td><b>${formatPct(r.currentTarget)}</b></td>
+                        <td><b>${formatNum(r.price)}</b></td>
+                        <td><b>${formatPct(r.todayChg)}</b></td>
+                        <td>${formatNum(r.high52)}</td>
+                        <td>${formatNum(r.low52)}</td>
+                        <td>${formatPct(r.offHigh)}</td>
+                        <td>${formatPct(r.upLow)}</td>
+                        <td>${formatNum(r.ma50)}</td>
+                        <td>${formatNum(r.ma200)}</td>
+                        <td>${formatPct(r.vsMa200)}</td>
+                        <td>${formatNum(r.pe)}</td>
+                        <td>${formatPct(r.yieldVal)}</td>
+                    </tr>`;
+                });
+
+                contentHtml += `</tbody></table></div></div>`;
             });
 
-            html += `</tbody></table></div></div>`;
-
+            // Cheat Sheet at Bottom
             if (cheatSheetLines.length > 0) {
-                html += `
+                contentHtml += `
                 <div class="section-card">
                     <div style="background-color: #1e293b; padding: 16px 20px; font-size: 1.1rem; color: var(--accent-blue); border-bottom: 2px solid var(--border-color); font-weight: bold;">
                         📋 Strategy Rules & Execution Framework
@@ -450,15 +440,15 @@
                 
                 cheatSheetLines.forEach(line => {
                     if (line.includes("STRATEGY CHEAT SHEET")) return;
-                    if (/^\d\./.test(line)) html += `<div class="cheat-sheet-rule">${line}</div>`;
-                    else if (line.startsWith("-")) html += `<div class="cheat-sheet-subrule">${line}</div>`;
-                    else html += `<div>${line}</div>`;
+                    if (/^\d\./.test(line)) contentHtml += `<div class="cheat-sheet-rule">${line}</div>`;
+                    else if (line.startsWith("-")) contentHtml += `<div class="cheat-sheet-subrule">${line}</div>`;
+                    else contentHtml += `<div>${line}</div>`;
                 });
 
-                html += `</div></div>`;
+                contentHtml += `</div></div>`;
             }
 
-            document.getElementById('dashboard-content').innerHTML = html;
+            document.getElementById('dashboard-content').innerHTML = contentHtml;
         }
 
         async function loadDashboard() {
@@ -467,7 +457,7 @@
                 const data = await response.json();
                 document.getElementById('loading').style.display = 'none';
                 parseSheetData(data);
-                renderTable();
+                renderTables();
             } catch (error) {
                 document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data. Check Web App URL & permissions.";
             }

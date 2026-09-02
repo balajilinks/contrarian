@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrarian Investor Dashboard V9</title>
+    <title>Contrarian Investor Dashboard V12</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -22,10 +22,115 @@
             padding: 24px;
         }
 
-        .header { text-align: center; margin-bottom: 32px; }
+        .header { text-align: center; margin-bottom: 24px; }
         .header h1 { color: var(--accent-blue); margin-bottom: 8px; font-size: 2rem; }
         .header p { color: var(--text-muted); margin: 0; }
         .loading { text-align: center; font-size: 1.2rem; color: var(--accent-blue); padding: 40px; }
+
+        /* Control Panel / Slider Bar */
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            color: var(--accent-blue);
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .panel-inputs {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #0f172a;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .slider-group label { font-weight: 600; color: #cbd5e1; white-space: nowrap; }
+        
+        .slider-group input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            accent-color: var(--accent-blue);
+            height: 5px;
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        .slider-val {
+            font-weight: bold;
+            color: var(--accent-blue);
+            min-width: 42px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        .reset-btn {
+            background-color: #334155;
+            color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .reset-btn:hover { background-color: #0284c7; color: white; }
+
+        /* Filter Tabs */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .filter-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { background-color: #334155; color: #fff; }
+        .filter-btn.active {
+            background-color: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
 
         .section-card {
             background-color: var(--card-bg);
@@ -36,26 +141,39 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        .section-title {
-            background-color: #1e293b;
-            padding: 16px 20px;
-            margin: 0;
-            font-size: 1.25rem;
+        .table-wrapper { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.88rem; }
+
+        th {
+            background-color: #0f172a;
             color: var(--accent-blue);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            padding: 12px 14px;
+            text-align: left;
             border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
         }
 
-        .table-wrapper { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.9rem; }
-        th { background-color: #0f172a; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        th:hover { background-color: #1e293b; color: #ffffff; }
+        th .sort-icon { font-size: 0.7rem; margin-left: 4px; opacity: 0.6; }
+
+        td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
         tr:hover { background-color: #334155; }
         code { background-color: #0f172a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 
-        .badge { font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; display: inline-block; }
+        .tier-tag {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background-color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .badge { font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 0.78rem; display: inline-block; }
         .status-strong-buy { background-color: #065f46; color: #a7f3d0; }
         .status-bleeding { background-color: #881337; color: #fecdd3; }
         .status-fomo { background-color: #991b1b; color: #fca5a5; }
@@ -73,8 +191,45 @@
 <body>
 
     <div class="header">
-        <h1>📊 Contrarian Investor Dashboard</h1>
-        <p>Live technical signals, daily changes & valuation metrics via Google Sheets API</p>
+        <h1>📊 Contrarian Investor Master Dashboard</h1>
+        <p>Interactive Target Sliders • Click headers to sort • Filter by risk tier</p>
+    </div>
+
+    <!-- Interactive Range Sliders -->
+    <div class="panel-card">
+        <div class="panel-title">🎛️ What-If Simulation (Adjust Target Drop Sliders)</div>
+        <div class="panel-inputs">
+            <div class="slider-group">
+                <label>Macro Indices:</label>
+                <input type="range" id="input-TIER1" min="-30" max="0" value="-10" step="1" oninput="handleSliderChange('TIER1', this.value)">
+                <span class="slider-val" id="val-TIER1">-10%</span>
+            </div>
+            <div class="slider-group">
+                <label>Blue-Chips & Tech:</label>
+                <input type="range" id="input-TIER2" min="-40" max="0" value="-20" step="1" oninput="handleSliderChange('TIER2', this.value)">
+                <span class="slider-val" id="val-TIER2">-20%</span>
+            </div>
+            <div class="slider-group">
+                <label>Volatile & EMs:</label>
+                <input type="range" id="input-TIER3" min="-60" max="0" value="-35" step="1" oninput="handleSliderChange('TIER3', this.value)">
+                <span class="slider-val" id="val-TIER3">-35%</span>
+            </div>
+            <div class="slider-group">
+                <label>Wild Assets:</label>
+                <input type="range" id="input-TIER4" min="-80" max="0" value="-50" step="1" oninput="handleSliderChange('TIER4', this.value)">
+                <span class="slider-val" id="val-TIER4">-50%</span>
+            </div>
+            <button class="reset-btn" onclick="resetDefaults()">🔄 Reset Defaults</button>
+        </div>
+    </div>
+
+    <!-- Tier Filter Tabs -->
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="setFilter('ALL', event)">🌐 All Assets</button>
+        <button class="filter-btn" onclick="setFilter('TIER1', event)">Macro Indices (-10%)</button>
+        <button class="filter-btn" onclick="setFilter('TIER2', event)">Blue-Chips & Tech (-20%)</button>
+        <button class="filter-btn" onclick="setFilter('TIER3', event)">Volatile & EMs (-35%)</button>
+        <button class="filter-btn" onclick="setFilter('TIER4', event)">Wild Assets (-50%)</button>
     </div>
 
     <div id="loading" class="loading">⏳ Fetching live market data from Google Sheets...</div>
@@ -82,6 +237,15 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx7a59SNkSNUQINzOvNV46AUrvM4vCCxfvvHLzraYpsE9DqqE8VYnGKhyLOlBUyRo-6/exec";
+
+        let cheatSheetLines = [];
+        let parsedData = [];
+        let currentFilter = 'ALL';
+        let sortCol = null;
+        let sortAsc = true;
+
+        let tierOverrides = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
+        const DEFAULT_TIER_TARGETS = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
 
         function formatPct(val) {
             if (val === "" || val === null || isNaN(val)) return "-";
@@ -104,132 +268,208 @@
             return "status-neutral";
         }
 
-        function createTable(rows) {
-            let html = `
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Asset Name</th>
-                            <th>Ticker</th>
-                            <th>Status</th>
-                            <th>Theme</th>
-                            <th>Target</th>
-                            <th>Price</th>
-                            <th>Today's Chg</th>
-                            <th>52W High</th>
-                            <th>52W Low</th>
-                            <th>% Off High</th>
-                            <th>% Up Low</th>
-                            <th>50d MA</th>
-                            <th>200d MA</th>
-                            <th>% vs 200d MA</th>
-                            <th>P/E</th>
-                            <th>Yield</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+        function computeDynamicStatus(item) {
+            if (item.theme === "Ratio Metric" || item.ticker.includes("INDEXNASDAQ:NDX")) {
+                if (item.price === null || item.ma200 === null) return "⏳ LOADING";
+                return (item.price < item.ma200) ? "🔵 TECH ROTATION BUY" : "⚪ BALANCED";
+            }
 
-            rows.forEach(r => {
-                const badgeClass = getStatusBadgeClass(r[2]);
+            const target = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
+            const offHigh = item.offHigh;
+            const price = item.price;
+            const ma200 = item.ma200;
+
+            if (offHigh !== null && offHigh >= -0.05) return "🔴 FOMO ZONE";
+            if (offHigh !== null && target !== null && offHigh <= target) {
+                return (price !== null && ma200 !== null && price > ma200) ? "🟢 STRONG BUY (Turnaround)" : "🩸 BLEEDING (Watch)";
+            }
+            return "⚪ NEUTRAL";
+        }
+
+        function parseRawValue(val) {
+            if (val === "" || val === null || val === undefined) return null;
+            const num = parseFloat(val);
+            return isNaN(num) ? val.toString().trim() : num;
+        }
+
+        function parseSheetData(data) {
+            parsedData = [];
+            cheatSheetLines = [];
+            let isCheatSheet = true;
+            let currentTierKey = 'TIER1';
+            let currentTierLabel = 'Macro Index';
+
+            data.forEach(row => {
+                const name = row[0] ? row[0].toString().trim() : "";
+                const ticker = row[1] ? row[1].toString().trim() : "";
+
+                if (name === "Asset Name") { isCheatSheet = false; return; }
+                if (isCheatSheet && name !== "") { cheatSheetLines.push(name); return; }
+
+                if (name.includes("Core Blue-Chips")) { currentTierKey = 'TIER2'; currentTierLabel = 'Blue-Chip'; return; }
+                if (name.includes("High Volatility")) { currentTierKey = 'TIER3'; currentTierLabel = 'EM/Volatile'; return; }
+                if (name.includes("Hyper-Speculative")) { currentTierKey = 'TIER4'; currentTierLabel = 'Wild'; return; }
+
+                if (ticker && ticker !== "Ticker" && !ticker.includes("CURRENCY:")) {
+                    parsedData.push({
+                        tierKey: currentTierKey,
+                        tierLabel: currentTierLabel,
+                        name: name || "-",
+                        ticker: ticker || "-",
+                        sheetTarget: parseRawValue(row[4]),
+                        theme: row[3] || "-",
+                        price: parseRawValue(row[5]),
+                        todayChg: parseRawValue(row[6]),
+                        high52: parseRawValue(row[7]),
+                        low52: parseRawValue(row[8]),
+                        offHigh: parseRawValue(row[9]),
+                        upLow: parseRawValue(row[10]),
+                        ma50: parseRawValue(row[11]),
+                        ma200: parseRawValue(row[12]),
+                        vsMa200: parseRawValue(row[13]),
+                        pe: parseRawValue(row[15]),
+                        yieldVal: parseRawValue(row[16])
+                    });
+                }
+            });
+        }
+
+        function handleSliderChange(tierKey, val) {
+            document.getElementById(`val-${tierKey}`).innerText = `${val}%`;
+            tierOverrides[tierKey] = parseFloat(val) / 100;
+            renderTable();
+        }
+
+        function resetDefaults() {
+            tierOverrides = { ...DEFAULT_TIER_TARGETS };
+            const defaults = { TIER1: -10, TIER2: -20, TIER3: -35, TIER4: -50 };
+            for (let key in defaults) {
+                document.getElementById(`input-${key}`).value = defaults[key];
+                document.getElementById(`val-${key}`).innerText = `${defaults[key]}%`;
+            }
+            renderTable();
+        }
+
+        function handleSort(key) {
+            if (sortCol === key) sortAsc = !sortAsc;
+            else { sortCol = key; sortAsc = true; }
+            renderTable();
+        }
+
+        function setFilter(tierKey, evt) {
+            currentFilter = tierKey;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            evt.target.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            let filtered = parsedData.filter(item => currentFilter === 'ALL' || item.tierKey === currentFilter);
+
+            filtered.forEach(item => {
+                item.status = computeDynamicStatus(item);
+                item.currentTarget = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
+            });
+
+            if (sortCol) {
+                filtered.sort((a, b) => {
+                    let valA = a[sortCol];
+                    let valB = b[sortCol];
+                    if (valA === null) return 1;
+                    if (valB === null) return -1;
+                    if (typeof valA === 'string') return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    return sortAsc ? valA - valB : valB - valA;
+                });
+            }
+
+            const getSortIcon = (key) => {
+                if (sortCol !== key) return '<span class="sort-icon">↕</span>';
+                return sortAsc ? '<span class="sort-icon">▲</span>' : '<span class="sort-icon">▼</span>';
+            };
+
+            let html = `
+            <div class="section-card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th onclick="handleSort('name')">Asset Name ${getSortIcon('name')}</th>
+                                <th onclick="handleSort('ticker')">Ticker ${getSortIcon('ticker')}</th>
+                                <th onclick="handleSort('status')">Status ${getSortIcon('status')}</th>
+                                <th onclick="handleSort('tierLabel')">Tier ${getSortIcon('tierLabel')}</th>
+                                <th onclick="handleSort('theme')">Theme ${getSortIcon('theme')}</th>
+                                <th onclick="handleSort('currentTarget')">Target ${getSortIcon('currentTarget')}</th>
+                                <th onclick="handleSort('price')">Price ${getSortIcon('price')}</th>
+                                <th onclick="handleSort('todayChg')">Today's Chg ${getSortIcon('todayChg')}</th>
+                                <th onclick="handleSort('high52')">52W High ${getSortIcon('high52')}</th>
+                                <th onclick="handleSort('low52')">52W Low ${getSortIcon('low52')}</th>
+                                <th onclick="handleSort('offHigh')">% Off High ${getSortIcon('offHigh')}</th>
+                                <th onclick="handleSort('upLow')">% Up Low ${getSortIcon('upLow')}</th>
+                                <th onclick="handleSort('ma50')">50d MA ${getSortIcon('ma50')}</th>
+                                <th onclick="handleSort('ma200')">200d MA ${getSortIcon('ma200')}</th>
+                                <th onclick="handleSort('vsMa200')">% vs 200d ${getSortIcon('vsMa200')}</th>
+                                <th onclick="handleSort('pe')">P/E ${getSortIcon('pe')}</th>
+                                <th onclick="handleSort('yieldVal')">Yield ${getSortIcon('yieldVal')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            filtered.forEach(r => {
+                const badgeClass = getStatusBadgeClass(r.status);
                 html += `
                 <tr>
-                    <td><b>${r[0] || "-"}</b></td>
-                    <td><code>${r[1] || "-"}</code></td>
-                    <td><span class="badge ${badgeClass}">${r[2] || "⚪ NEUTRAL"}</span></td>
-                    <td>${r[3] || "-"}</td>
-                    <td><b>${formatPct(r[4])}</b></td>
-                    <td><b>${formatNum(r[5])}</b></td>
-                    <td><b>${formatPct(r[6])}</b></td>
-                    <td>${formatNum(r[7])}</td>
-                    <td>${formatNum(r[8])}</td>
-                    <td>${formatPct(r[9])}</td>
-                    <td>${formatPct(r[10])}</td>
-                    <td>${formatNum(r[11])}</td>
-                    <td>${formatNum(r[12])}</td>
-                    <td>${formatPct(r[13])}</td>
-                    <td>${formatNum(r[15])}</td>
-                    <td>${formatPct(r[16])}</td>
+                    <td><b>${r.name}</b></td>
+                    <td><code>${r.ticker}</code></td>
+                    <td><span class="badge ${badgeClass}">${r.status}</span></td>
+                    <td><span class="tier-tag">${r.tierLabel}</span></td>
+                    <td>${r.theme}</td>
+                    <td><b>${formatPct(r.currentTarget)}</b></td>
+                    <td><b>${formatNum(r.price)}</b></td>
+                    <td><b>${formatPct(r.todayChg)}</b></td>
+                    <td>${formatNum(r.high52)}</td>
+                    <td>${formatNum(r.low52)}</td>
+                    <td>${formatPct(r.offHigh)}</td>
+                    <td>${formatPct(r.upLow)}</td>
+                    <td>${formatNum(r.ma50)}</td>
+                    <td>${formatNum(r.ma200)}</td>
+                    <td>${formatPct(r.vsMa200)}</td>
+                    <td>${formatNum(r.pe)}</td>
+                    <td>${formatPct(r.yieldVal)}</td>
                 </tr>`;
             });
 
-            html += `</tbody></table></div>`;
-            return html;
+            html += `</tbody></table></div></div>`;
+
+            if (cheatSheetLines.length > 0) {
+                html += `
+                <div class="section-card">
+                    <div style="background-color: #1e293b; padding: 16px 20px; font-size: 1.1rem; color: var(--accent-blue); border-bottom: 2px solid var(--border-color); font-weight: bold;">
+                        📋 Strategy Rules & Execution Framework
+                    </div>
+                    <div class="cheat-sheet-content">`;
+                
+                cheatSheetLines.forEach(line => {
+                    if (line.includes("STRATEGY CHEAT SHEET")) return;
+                    if (/^\d\./.test(line)) html += `<div class="cheat-sheet-rule">${line}</div>`;
+                    else if (line.startsWith("-")) html += `<div class="cheat-sheet-subrule">${line}</div>`;
+                    else html += `<div>${line}</div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            document.getElementById('dashboard-content').innerHTML = html;
         }
 
         async function loadDashboard() {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                
                 document.getElementById('loading').style.display = 'none';
-
-                let sec1 = [], sec2 = [], sec3 = [], sec4 = [];
-                let cheatSheetLines = [];
-                let isCheatSheet = true;
-                let currentSection = 1;
-
-                data.forEach(row => {
-                    const name = row[0] ? row[0].toString().trim() : "";
-                    const ticker = row[1] ? row[1].toString().trim() : "";
-
-                    // Capture Cheat Sheet rows at the top of the sheet
-                    if (name === "Asset Name") {
-                        isCheatSheet = false;
-                        return;
-                    }
-
-                    if (isCheatSheet && name !== "") {
-                        cheatSheetLines.push(name);
-                        return;
-                    }
-
-                    // Section Detection
-                    if (name.includes("Core Blue-Chips")) { currentSection = 2; return; }
-                    if (name.includes("High Volatility")) { currentSection = 3; return; }
-                    if (name.includes("Hyper-Speculative")) { currentSection = 4; return; }
-
-                    if (ticker && ticker !== "Ticker" && !ticker.includes("CURRENCY:")) {
-                        if (currentSection === 1) sec1.push(row);
-                        else if (currentSection === 2) sec2.push(row);
-                        else if (currentSection === 3) sec3.push(row);
-                        else if (currentSection === 4) sec4.push(row);
-                    }
-                });
-
-                let contentHtml = "";
-
-                if (sec1.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🌐 Macro Indices & Relative Ratios <span>Target Drop: -10%</span></h2>${createTable(sec1)}</div>`;
-                if (sec2.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔷 Core Blue-Chips & Broad Tech <span>Target Drop: -20%</span></h2>${createTable(sec2)}</div>`;
-                if (sec3.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔶 High Volatility & Emerging Markets <span>Target Drop: -35%</span></h2>${createTable(sec3)}</div>`;
-                if (sec4.length > 0) contentHtml += `<div class="section-card"><h2 class="section-title">🔥 Hyper-Speculative & Wild Assets <span>Target Drop: -50%</span></h2>${createTable(sec4)}</div>`;
-
-                // Render Strategy Cheat Sheet Card at the bottom
-                if (cheatSheetLines.length > 0) {
-                    contentHtml += `
-                    <div class="section-card">
-                        <h2 class="section-title">📋 Strategy Rules & Execution Framework</h2>
-                        <div class="cheat-sheet-content">`;
-                    
-                    cheatSheetLines.forEach(line => {
-                        if (line.includes("STRATEGY CHEAT SHEET")) {
-                            return; // Header handled by section-title
-                        } else if (/^\d\./.test(line)) {
-                            contentHtml += `<div class="cheat-sheet-rule">${line}</div>`;
-                        } else if (line.startsWith("-")) {
-                            contentHtml += `<div class="cheat-sheet-subrule">${line}</div>`;
-                        } else {
-                            contentHtml += `<div>${line}</div>`;
-                        }
-                    });
-
-                    contentHtml += `</div></div>`;
-                }
-
-                document.getElementById('dashboard-content').innerHTML = contentHtml;
-
+                parseSheetData(data);
+                renderTable();
             } catch (error) {
-                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data.";
+                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data. Check Web App URL & permissions.";
             }
         }
 

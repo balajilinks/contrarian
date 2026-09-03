@@ -3,201 +3,405 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrarian Investor Dashboard V13</title>
+    <title>Contrarian Investor Dashboard</title>
     <style>
         :root {
-            --bg-color: #0f172a;
+            --bg-dark: #0f172a;
             --card-bg: #1e293b;
             --text-main: #f8fafc;
+            --text-secondary: #cbd5e1;
             --text-muted: #94a3b8;
             --accent-blue: #38bdf8;
+            --accent-purple: #a78bfa;
             --border-color: #334155;
+            
+            --tier1-tint: rgba(34, 197, 94, 0.08);
+            --tier2-tint: rgba(56, 189, 248, 0.08);
+            --tier3-tint: rgba(251, 146, 60, 0.08);
+            --tier4-tint: rgba(239, 68, 68, 0.08);
         }
 
+        * { box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
             padding: 24px;
+            line-height: 1.6;
         }
 
-        .header { text-align: center; margin-bottom: 24px; }
-        .header h1 { color: var(--accent-blue); margin-bottom: 8px; font-size: 2rem; }
-        .header p { color: var(--text-muted); margin: 0; }
-        .loading { text-align: center; font-size: 1.2rem; color: var(--accent-blue); padding: 40px; }
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-        /* Control Panel / Slider Bar */
-        .panel-card {
-            background-color: var(--card-bg);
+        .header h1 {
+            color: var(--accent-blue);
+            margin: 0 0 8px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--accent-blue);
+            padding: 60px 20px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(30, 41, 59, 0.8) 100%);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 18px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .panel-title {
+        .control-title {
             color: var(--accent-blue);
-            font-size: 0.95rem;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.12em;
+            margin-bottom: 20px;
+        }
+
+        .slider-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
             margin-bottom: 16px;
         }
 
-        .panel-inputs {
+        .slider-item {
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .slider-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: #0f172a;
-            padding: 8px 14px;
+            flex-direction: column;
+            gap: 8px;
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 14px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            flex: 1;
-            min-width: 220px;
+            transition: all 0.2s ease;
         }
 
-        .slider-group label { font-weight: 600; color: #cbd5e1; white-space: nowrap; }
-        
-        .slider-group input[type="range"] {
-            flex: 1;
+        .slider-item:hover {
+            background-color: rgba(15, 23, 42, 0.8);
+            border-color: var(--accent-blue);
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slider-item label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .slider-value {
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .slider-item input[type="range"] {
+            width: 100%;
+            height: 6px;
             cursor: pointer;
             accent-color: var(--accent-blue);
-            height: 5px;
-            background: #334155;
             border-radius: 3px;
+            background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #22c55e 75%, #10b981 100%);
+            -webkit-appearance: none;
+            appearance: none;
         }
 
-        .slider-val {
-            font-weight: bold;
+        .slider-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
+            border: 2px solid var(--card-bg);
+        }
+
+        .slider-item input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
+            border: 2px solid var(--card-bg);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(167, 139, 250, 0.1));
             color: var(--accent-blue);
-            min-width: 42px;
-            text-align: right;
-            font-family: monospace;
-            font-size: 0.95rem;
-        }
-
-        .reset-btn {
-            background-color: #334155;
-            color: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
+            border: 1px solid var(--accent-blue);
+            padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
-            transition: all 0.2s;
-            margin-left: auto;
-            white-space: nowrap;
+            transition: all 0.3s ease;
         }
 
-        .reset-btn:hover { background-color: #0284c7; color: white; }
+        .btn-reset:hover {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(167, 139, 250, 0.2));
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+            transform: translateY(-2px);
+        }
 
+        /* Section Card */
         .section-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
             overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            padding: 18px 24px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.05) 0%, transparent 100%);
         }
 
         .section-title {
-            background-color: #1e293b;
-            padding: 16px 20px;
-            margin: 0;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
+            font-weight: 700;
             color: var(--accent-blue);
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin: 0;
         }
 
-        .table-wrapper { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 0.88rem; }
+        .section-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        .tier1 { border-left: 4px solid #22c55e; }
+        .tier2 { border-left: 4px solid #38bdf8; }
+        .tier3 { border-left: 4px solid #fb923c; }
+        .tier4 { border-left: 4px solid #ef4444; }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
 
         th {
             background-color: #0f172a;
             color: var(--accent-blue);
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
             padding: 12px 14px;
             text-align: left;
             border-bottom: 2px solid var(--border-color);
             cursor: pointer;
             user-select: none;
-            transition: background 0.2s;
+            white-space: nowrap;
+            transition: background-color 0.2s;
         }
 
-        th:hover { background-color: #1e293b; color: #ffffff; }
-        th .sort-icon { font-size: 0.7rem; margin-left: 4px; opacity: 0.6; }
+        th:hover {
+            background-color: var(--border-color);
+            color: #60a5fa;
+        }
 
-        td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
-        tr:hover { background-color: #334155; }
-        code { background-color: #0f172a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        th .sort-icon {
+            font-size: 0.65rem;
+            margin-left: 4px;
+            opacity: 0.6;
+        }
 
-        .badge { font-weight: 600; padding: 4px 8px; border-radius: 6px; font-size: 0.78rem; display: inline-block; }
-        .status-strong-buy { background-color: #065f46; color: #a7f3d0; }
-        .status-bleeding { background-color: #881337; color: #fecdd3; }
-        .status-fomo { background-color: #991b1b; color: #fca5a5; }
-        .status-neutral { background-color: #334155; color: #cbd5e1; }
-        .status-tech { background-color: #1e40af; color: #bfdbfe; }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-        .negative { color: #f87171; font-weight: 500; }
-        .positive { color: #4ade80; font-weight: 500; }
+        tr {
+            transition: background-color 0.2s;
+        }
 
-        .cheat-sheet-content { padding: 20px; line-height: 1.8; color: #cbd5e1; font-size: 0.95rem; }
-        .cheat-sheet-rule { font-weight: 600; color: #38bdf8; margin-top: 12px; margin-bottom: 4px; }
-        .cheat-sheet-subrule { margin-left: 20px; margin-top: 2px; margin-bottom: 2px; }
+        tr:hover {
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+
+        .asset-name {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        code {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-strong-buy { background-color: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-bleeding { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .status-fomo { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; }
+        .status-tech { background-color: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+        .status-neutral { background-color: rgba(107, 114, 128, 0.2); color: #cbd5e1; }
+
+        .positive { color: #22c55e; font-weight: 600; }
+        .negative { color: #f87171; font-weight: 600; }
+
+        /* Cheat Sheet */
+        .cheatsheet-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 28px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cheatsheet-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .cheatsheet-rule {
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+
+        .cheatsheet-subrule {
+            margin-left: 16px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .cheatsheet-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .header h1 { font-size: 1.35rem; }
+            .slider-container { grid-template-columns: 1fr; }
+            
+            .table-wrapper { overflow-x: auto; }
+            
+            th, td {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.15rem; }
+            th { font-size: 0.65rem; }
+            td { padding: 8px; }
+            .status-badge { padding: 6px 10px; font-size: 0.7rem; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>📊 Contrarian Investor Master Dashboard</h1>
-        <p>Dynamic What-If Simulation • Independent Section Sorting</p>
+        <h1>📊 Contrarian Investor Dashboard</h1>
+        <p>Dynamic what-if simulation • Real-time market data</p>
     </div>
 
-    <!-- Sliders -->
-    <div class="panel-card">
-        <div class="panel-title">🎛️ What-If Simulation (Adjust Target Drop Sliders)</div>
-        <div class="panel-inputs">
-            <div class="slider-group">
-                <label>Macro Indices:</label>
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <div class="control-title">🎛️ What-If Simulation (Adjust Target Drop)</div>
+        <div class="slider-container">
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <label>Macro Indices</label>
+                    <span class="slider-value" id="val-TIER1">-10%</span>
+                </div>
                 <input type="range" id="input-TIER1" min="-30" max="0" value="-10" step="1" oninput="handleSliderChange('TIER1', this.value)">
-                <span class="slider-val" id="val-TIER1">-10%</span>
             </div>
-            <div class="slider-group">
-                <label>Blue-Chips & Tech:</label>
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <label>Blue-Chips & Tech</label>
+                    <span class="slider-value" id="val-TIER2">-20%</span>
+                </div>
                 <input type="range" id="input-TIER2" min="-40" max="0" value="-20" step="1" oninput="handleSliderChange('TIER2', this.value)">
-                <span class="slider-val" id="val-TIER2">-20%</span>
             </div>
-            <div class="slider-group">
-                <label>Volatile & EMs:</label>
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <label>Volatile & EMs</label>
+                    <span class="slider-value" id="val-TIER3">-35%</span>
+                </div>
                 <input type="range" id="input-TIER3" min="-60" max="0" value="-35" step="1" oninput="handleSliderChange('TIER3', this.value)">
-                <span class="slider-val" id="val-TIER3">-35%</span>
             </div>
-            <div class="slider-group">
-                <label>Wild Assets:</label>
+            <div class="slider-item">
+                <div class="slider-label-row">
+                    <label>Wild Assets</label>
+                    <span class="slider-value" id="val-TIER4">-50%</span>
+                </div>
                 <input type="range" id="input-TIER4" min="-80" max="0" value="-50" step="1" oninput="handleSliderChange('TIER4', this.value)">
-                <span class="slider-val" id="val-TIER4">-50%</span>
             </div>
-            <button class="reset-btn" onclick="resetDefaults()">🔄 Reset Defaults</button>
         </div>
+        <button class="btn-reset" onclick="resetDefaults()">🔄 Reset Defaults</button>
     </div>
 
-    <div id="loading" class="loading">⏳ Fetching live market data from Google Sheets...</div>
+    <div id="loading" class="loading">Loading market data...</div>
     <div id="dashboard-content"></div>
 
     <script>
@@ -205,12 +409,9 @@
 
         let cheatSheetLines = [];
         let parsedData = [];
-
-        // Tier Target Overrides
         let tierOverrides = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
         const DEFAULT_TIER_TARGETS = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
 
-        // Independent Sort State for Each Section
         let sectionSort = {
             TIER1: { col: null, asc: true },
             TIER2: { col: null, asc: true },
@@ -219,49 +420,21 @@
         };
 
         const SECTION_META = [
-            { key: 'TIER1', title: '🌐 Macro Indices & Relative Ratios' },
-            { key: 'TIER2', title: '🔷 Core Blue-Chips & Broad Tech' },
-            { key: 'TIER3', title: '🔶 High Volatility & Emerging Markets' },
-            { key: 'TIER4', title: '🔥 Hyper-Speculative & Wild Assets' }
+            { key: 'TIER1', title: '🌐 Macro Indices & Relative Ratios', tier: 'tier1' },
+            { key: 'TIER2', title: '🔷 Core Blue-Chips & Broad Tech', tier: 'tier2' },
+            { key: 'TIER3', title: '🔶 High Volatility & Emerging Markets', tier: 'tier3' },
+            { key: 'TIER4', title: '🔥 Hyper-Speculative & Wild Assets', tier: 'tier4' }
         ];
 
         function formatPct(val) {
             if (val === "" || val === null || isNaN(val)) return "-";
             const num = parseFloat(val) * 100;
-            const cls = num < 0 ? "negative" : "positive";
-            return `<span class="${cls}">${num.toFixed(2)}%</span>`;
+            return num.toFixed(2) + "%";
         }
 
         function formatNum(val, decimals = 2) {
             if (val === "" || val === null || isNaN(val)) return "-";
             return parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-        }
-
-        function getStatusBadgeClass(status) {
-            if (!status) return "status-neutral";
-            if (status.includes("STRONG BUY")) return "status-strong-buy";
-            if (status.includes("BLEEDING")) return "status-bleeding";
-            if (status.includes("FOMO")) return "status-fomo";
-            if (status.includes("TECH ROTATION")) return "status-tech";
-            return "status-neutral";
-        }
-
-        function computeDynamicStatus(item) {
-            if (item.theme === "Ratio Metric" || item.ticker.includes("INDEXNASDAQ:NDX")) {
-                if (item.price === null || item.ma200 === null) return "⏳ LOADING";
-                return (item.price < item.ma200) ? "🔵 TECH ROTATION BUY" : "⚪ BALANCED";
-            }
-
-            const target = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
-            const offHigh = item.offHigh;
-            const price = item.price;
-            const ma200 = item.ma200;
-
-            if (offHigh !== null && offHigh >= -0.05) return "🔴 FOMO ZONE";
-            if (offHigh !== null && target !== null && offHigh <= target) {
-                return (price !== null && ma200 !== null && price > ma200) ? "🟢 STRONG BUY (Turnaround)" : "🩸 BLEEDING (Watch)";
-            }
-            return "⚪ NEUTRAL";
         }
 
         function parseRawValue(val) {
@@ -270,12 +443,29 @@
             return isNaN(num) ? val.toString().trim() : num;
         }
 
+        function computeDynamicStatus(item) {
+            if (item.theme === "Ratio Metric" || item.ticker.includes("INDEXNASDAQ:NDX")) {
+                if (item.price === null || item.ma200 === null) return "⏳ Loading";
+                return (item.price < item.ma200) ? "🔵 Tech rotation" : "⚪ Balanced";
+            }
+
+            const target = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
+            const offHigh = item.offHigh;
+            const price = item.price;
+            const ma200 = item.ma200;
+
+            if (offHigh !== null && offHigh >= -0.05) return "🔴 FOMO zone";
+            if (offHigh !== null && target !== null && offHigh <= target) {
+                return (price !== null && ma200 !== null && price > ma200) ? "🟢 Strong buy (Turnaround)" : "🩸 Bleeding (Watch)";
+            }
+            return "⚪ Neutral";
+        }
+
         function parseSheetData(data) {
             parsedData = [];
             cheatSheetLines = [];
             let isCheatSheet = true;
             let currentTierKey = 'TIER1';
-            let currentTierLabel = 'Macro Index';
 
             data.forEach(row => {
                 const name = row[0] ? row[0].toString().trim() : "";
@@ -284,14 +474,13 @@
                 if (name === "Asset Name") { isCheatSheet = false; return; }
                 if (isCheatSheet && name !== "") { cheatSheetLines.push(name); return; }
 
-                if (name.includes("Core Blue-Chips")) { currentTierKey = 'TIER2'; currentTierLabel = 'Blue-Chip'; return; }
-                if (name.includes("High Volatility")) { currentTierKey = 'TIER3'; currentTierLabel = 'EM/Volatile'; return; }
-                if (name.includes("Hyper-Speculative")) { currentTierKey = 'TIER4'; currentTierLabel = 'Wild'; return; }
+                if (name.includes("Core Blue-Chips")) { currentTierKey = 'TIER2'; return; }
+                if (name.includes("High Volatility")) { currentTierKey = 'TIER3'; return; }
+                if (name.includes("Hyper-Speculative")) { currentTierKey = 'TIER4'; return; }
 
                 if (ticker && ticker !== "Ticker" && !ticker.includes("CURRENCY:")) {
                     parsedData.push({
                         tierKey: currentTierKey,
-                        tierLabel: currentTierLabel,
                         name: name || "-",
                         ticker: ticker || "-",
                         sheetTarget: parseRawValue(row[4]),
@@ -338,6 +527,14 @@
             renderTables();
         }
 
+        function getStatusClass(status) {
+            if (status.includes("Strong buy")) return "status-strong-buy";
+            if (status.includes("Bleeding")) return "status-bleeding";
+            if (status.includes("FOMO")) return "status-fomo";
+            if (status.includes("rotation")) return "status-tech";
+            return "status-neutral";
+        }
+
         function renderTables() {
             let contentHtml = "";
 
@@ -347,13 +544,11 @@
 
                 if (items.length === 0) return;
 
-                // Recompute signals live based on sliders
                 items.forEach(item => {
                     item.status = computeDynamicStatus(item);
                     item.currentTarget = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
                 });
 
-                // Apply Section-Specific Sort
                 const sortState = sectionSort[tierKey];
                 if (sortState.col) {
                     items.sort((a, b) => {
@@ -374,11 +569,13 @@
                 const currentTargetPct = (tierOverrides[tierKey] * 100).toFixed(0);
 
                 contentHtml += `
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <span>${sec.title}</span>
-                        <span style="font-size: 0.85rem; color: #38bdf8;">Target Drop: ${currentTargetPct}%</span>
-                    </h2>
+                <div class="section-card ${sec.tier}">
+                    <div class="section-header">
+                        <div>
+                            <h2 class="section-title">${sec.title}</h2>
+                            <p class="section-subtitle">Target drop: ${currentTargetPct}%</p>
+                        </div>
+                    </div>
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -404,24 +601,25 @@
                             <tbody>`;
 
                 items.forEach(r => {
-                    const badgeClass = getStatusBadgeClass(r.status);
+                    const statusClass = getStatusClass(r.status);
+                    
                     contentHtml += `
                     <tr>
                         <td><b>${r.name}</b></td>
                         <td><code>${r.ticker}</code></td>
-                        <td><span class="badge ${badgeClass}">${r.status}</span></td>
+                        <td><span class="status-badge ${statusClass}">${r.status}</span></td>
                         <td>${r.theme}</td>
-                        <td><b>${formatPct(r.currentTarget)}</b></td>
+                        <td><span class="positive">${formatPct(r.currentTarget)}</span></td>
                         <td><b>${formatNum(r.price)}</b></td>
-                        <td><b>${formatPct(r.todayChg)}</b></td>
+                        <td><span class="${r.todayChg > 0 ? 'positive' : 'negative'}">${formatPct(r.todayChg)}</span></td>
                         <td>${formatNum(r.high52)}</td>
                         <td>${formatNum(r.low52)}</td>
-                        <td>${formatPct(r.offHigh)}</td>
-                        <td>${formatPct(r.upLow)}</td>
+                        <td><span class="${r.offHigh < 0 ? 'negative' : 'positive'}">${formatPct(r.offHigh)}</span></td>
+                        <td><span class="${r.upLow > 0 ? 'positive' : 'negative'}">${formatPct(r.upLow)}</span></td>
                         <td>${formatNum(r.ma50)}</td>
                         <td>${formatNum(r.ma200)}</td>
-                        <td>${formatPct(r.vsMa200)}</td>
-                        <td>${formatNum(r.pe)}</td>
+                        <td><span class="${r.vsMa200 > 0 ? 'positive' : 'negative'}">${formatPct(r.vsMa200)}</span></td>
+                        <td>${formatNum(r.pe, 1)}</td>
                         <td>${formatPct(r.yieldVal)}</td>
                     </tr>`;
                 });
@@ -429,23 +627,19 @@
                 contentHtml += `</tbody></table></div></div>`;
             });
 
-            // Cheat Sheet at Bottom
+            // Cheat Sheet
             if (cheatSheetLines.length > 0) {
-                contentHtml += `
-                <div class="section-card">
-                    <div style="background-color: #1e293b; padding: 16px 20px; font-size: 1.1rem; color: var(--accent-blue); border-bottom: 2px solid var(--border-color); font-weight: bold;">
-                        📋 Strategy Rules & Execution Framework
-                    </div>
-                    <div class="cheat-sheet-content">`;
+                contentHtml += `<div class="cheatsheet-card">
+                    <div class="cheatsheet-title">📋 Strategy Rules & Execution Framework</div>`;
                 
                 cheatSheetLines.forEach(line => {
                     if (line.includes("STRATEGY CHEAT SHEET")) return;
-                    if (/^\d\./.test(line)) contentHtml += `<div class="cheat-sheet-rule">${line}</div>`;
-                    else if (line.startsWith("-")) contentHtml += `<div class="cheat-sheet-subrule">${line}</div>`;
-                    else contentHtml += `<div>${line}</div>`;
+                    if (/^\d\./.test(line)) contentHtml += `<div class="cheatsheet-rule">${line}</div>`;
+                    else if (line.startsWith("-")) contentHtml += `<div class="cheatsheet-subrule">${line}</div>`;
+                    else if (line.trim()) contentHtml += `<div class="cheatsheet-text">${line}</div>`;
                 });
 
-                contentHtml += `</div></div>`;
+                contentHtml += `</div>`;
             }
 
             document.getElementById('dashboard-content').innerHTML = contentHtml;
@@ -459,7 +653,7 @@
                 parseSheetData(data);
                 renderTables();
             } catch (error) {
-                document.getElementById('loading').innerHTML = "❌ Error fetching spreadsheet data. Check Web App URL & permissions.";
+                document.getElementById('loading').innerHTML = "Error loading data. Check API URL.";
             }
         }
 

@@ -287,6 +287,7 @@
         .status-bleeding { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
         .status-fomo { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; }
         .status-tech { background-color: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+        .status-minervini { background-color: #5b21b6; color: #ddd6fe; border: 1px solid #8b5cf6; }
         .status-neutral { background-color: rgba(107, 114, 128, 0.2); color: #cbd5e1; }
 
         .positive { color: #22c55e; font-weight: 600; }
@@ -324,7 +325,7 @@
             font-size: 0.9rem;
             margin-bottom: 4px;
         }
-        .status-minervini { background-color: #5b21b6; color: #ddd6fe; border: 1px solid #8b5cf6; }
+
         .cheatsheet-text {
             color: var(--text-secondary);
             font-size: 0.9rem;
@@ -337,17 +338,8 @@
             body { padding: 16px; }
             .header h1 { font-size: 1.35rem; }
             .slider-container { grid-template-columns: 1fr; }
-            
             .table-wrapper { overflow-x: auto; }
-            
-            th, td {
-                padding: 10px;
-                font-size: 0.8rem;
-            }
-
-            .details-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            th, td { padding: 10px; font-size: 0.8rem; }
         }
 
         @media (max-width: 480px) {
@@ -452,8 +444,18 @@
             const target = (tierOverrides[item.tierKey] !== undefined) ? tierOverrides[item.tierKey] : item.sheetTarget;
             const offHigh = item.offHigh;
             const price = item.price;
+            const ma50 = item.ma50;
             const ma200 = item.ma200;
+            const upLow = item.upLow;
 
+            // 1. Minervini Trend Check
+            if (price !== null && ma50 !== null && ma200 !== null && upLow !== null && offHigh !== null) {
+                if (price > ma50 && ma50 > ma200 && upLow >= 0.30 && offHigh >= -0.25) {
+                    return "🚀 MINERVINI TREND";
+                }
+            }
+
+            // 2. Standard Checks
             if (offHigh !== null && offHigh >= -0.05) return "🔴 FOMO zone";
             if (offHigh !== null && target !== null && offHigh <= target) {
                 return (price !== null && ma200 !== null && price > ma200) ? "🟢 Strong buy (Turnaround)" : "🩸 Bleeding (Watch)";
@@ -530,14 +532,13 @@
         function getStatusClass(status) {
             if (!status) return "status-neutral";
             
-            // Convert to uppercase to prevent any capitalization mismatch errors
             let s = status.toUpperCase(); 
             
             if (s.includes("STRONG BUY")) return "status-strong-buy";
             if (s.includes("BLEEDING")) return "status-bleeding";
             if (s.includes("FOMO")) return "status-fomo";
             if (s.includes("ROTATION")) return "status-tech";
-            if (s.includes("MINERVINI")) return "status-minervini"; // 🚀 NEW RULE
+            if (s.includes("MINERVINI")) return "status-minervini";
             
             return "status-neutral";
         }
@@ -616,7 +617,7 @@
                         <td><code>${r.ticker}</code></td>
                         <td><span class="status-badge ${statusClass}">${r.status}</span></td>
                         <td>${r.theme}</td>
-                        <td><span class="positive">${formatPct(r.currentTarget)}</span></td>
+                        <td><span class="negative">${formatPct(r.currentTarget)}</span></td>
                         <td><b>${formatNum(r.price)}</b></td>
                         <td><span class="${r.todayChg > 0 ? 'positive' : 'negative'}">${formatPct(r.todayChg)}</span></td>
                         <td>${formatNum(r.high52)}</td>

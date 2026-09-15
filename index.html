@@ -324,7 +324,7 @@
             font-size: 0.9rem;
             margin-bottom: 4px;
         }
-
+        .status-minervini { background-color: #5b21b6; color: #ddd6fe; border: 1px solid #8b5cf6; }
         .cheatsheet-text {
             color: var(--text-secondary);
             font-size: 0.9rem;
@@ -528,10 +528,17 @@
         }
 
         function getStatusClass(status) {
-            if (status.includes("Strong buy")) return "status-strong-buy";
-            if (status.includes("Bleeding")) return "status-bleeding";
-            if (status.includes("FOMO")) return "status-fomo";
-            if (status.includes("rotation")) return "status-tech";
+            if (!status) return "status-neutral";
+            
+            // Convert to uppercase to prevent any capitalization mismatch errors
+            let s = status.toUpperCase(); 
+            
+            if (s.includes("STRONG BUY")) return "status-strong-buy";
+            if (s.includes("BLEEDING")) return "status-bleeding";
+            if (s.includes("FOMO")) return "status-fomo";
+            if (s.includes("ROTATION")) return "status-tech";
+            if (s.includes("MINERVINI")) return "status-minervini"; // 🚀 NEW RULE
+            
             return "status-neutral";
         }
 

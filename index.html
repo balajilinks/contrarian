@@ -32,6 +32,34 @@
             line-height: 1.6;
         }
 
+        /* ----- PASSWORD MODAL (NEW) ----- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .login-card {
+            background-color: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 32px; width: 100%; max-width: 360px; text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .login-card h2 { color: var(--accent-blue); margin-top: 0; margin-bottom: 8px; }
+        .login-card p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+        .pin-input {
+            width: 80%; padding: 12px; background: #0f172a; border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--accent-blue); font-size: 1.2rem; text-align: center;
+            letter-spacing: 4px; margin-bottom: 16px; outline: none;
+        }
+        .login-btn {
+            width: 88%; padding: 12px; background-color: #0284c7; color: white; border: none;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;
+        }
+        .login-btn:hover { background-color: #38bdf8; color: #0f172a; }
+        .error-msg { color: #f87171; font-size: 0.85rem; margin-top: 12px; display: none; }
+        .btn-lock { background: #334155; color: #f8fafc; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-lock:hover { background-color: #0284c7; color: white; }
+
+        /* ----- YOUR CUSTOM UI ----- */
         .header {
             text-align: center;
             margin-bottom: 32px;
@@ -74,6 +102,9 @@
             text-transform: uppercase;
             letter-spacing: 0.12em;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .slider-container {
@@ -287,51 +318,20 @@
         .status-bleeding { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
         .status-fomo { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; }
         .status-tech { background-color: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-        .status-minervini { background-color: #5b21b6; color: #ddd6fe; border: 1px solid #8b5cf6; }
         .status-neutral { background-color: rgba(107, 114, 128, 0.2); color: #cbd5e1; }
+        .status-minervini { background-color: #5b21b6; color: #ddd6fe; border: 1px solid #8b5cf6; }
 
         .positive { color: #22c55e; font-weight: 600; }
         .negative { color: #f87171; font-weight: 600; }
 
-        /* Cheat Sheet */
-        .cheatsheet-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-top: 28px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .cheatsheet-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--accent-blue);
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .cheatsheet-rule {
-            font-weight: 700;
-            color: var(--accent-blue);
-            margin-top: 14px;
-            margin-bottom: 6px;
-        }
-
-        .cheatsheet-subrule {
-            margin-left: 16px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .cheatsheet-text {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin: 8px 0;
-            line-height: 1.6;
-        }
+        /* ----- VISUAL CHEAT SHEET GRID (NEW) ----- */
+        .cheatsheet-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-top: 28px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .cheatsheet-title { font-size: 1.1rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid var(--border-color); }
+        .cs-rule-title { font-weight: 700; color: #f8fafc; margin-top: 16px; margin-bottom: 12px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .cs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+        .cs-box { padding: 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); }
+        .cs-box-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+        .cs-box-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
 
         /* Mobile */
         @media (max-width: 768px) {
@@ -340,6 +340,7 @@
             .slider-container { grid-template-columns: 1fr; }
             .table-wrapper { overflow-x: auto; }
             th, td { padding: 10px; font-size: 0.8rem; }
+            .details-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 480px) {
@@ -352,14 +353,29 @@
 </head>
 <body>
 
+    <!-- Authentication Overlay -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="login-card">
+            <h2>🔒 Restricted Dashboard</h2>
+            <p>Enter your PIN to authenticate with Google Apps Script</p>
+            <input type="password" id="pin-input" class="pin-input" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter') submitPin()">
+            <br>
+            <button class="login-btn" onclick="submitPin()">Unlock Dashboard</button>
+            <div id="error-msg" class="error-msg">❌ Invalid PIN. Access Denied.</div>
+        </div>
+    </div>
+
     <div class="header">
         <h1>📊 Contrarian Investor Dashboard</h1>
-        <p>Dynamic what-if simulation • Real-time market data</p>
+        <p>Authenticated API Access • Dynamic Sliders • Multi-Section Sorting</p>
     </div>
 
     <!-- Control Panel -->
     <div class="control-panel">
-        <div class="control-title">🎛️ What-If Simulation (Adjust Target Drop)</div>
+        <div class="control-title">
+            <span>🎛️ What-If Simulation (Adjust Target Drop)</span>
+            <button class="btn-lock" onclick="logout()">🔒 Lock Dashboard</button>
+        </div>
         <div class="slider-container">
             <div class="slider-item">
                 <div class="slider-label-row">
@@ -393,14 +409,15 @@
         <button class="btn-reset" onclick="resetDefaults()">🔄 Reset Defaults</button>
     </div>
 
-    <div id="loading" class="loading">Loading market data...</div>
+    <div id="loading" class="loading" style="display: none;">⏳ Fetching live market data from Google Sheets...</div>
     <div id="dashboard-content"></div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbx7a59SNkSNUQINzOvNV46AUrvM4vCCxfvvHLzraYpsE9DqqE8VYnGKhyLOlBUyRo-6/exec";
 
-        let cheatSheetLines = [];
         let parsedData = [];
+        let userPin = sessionStorage.getItem("dashboard_pin") || "";
+        
         let tierOverrides = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
         const DEFAULT_TIER_TARGETS = { TIER1: -0.10, TIER2: -0.20, TIER3: -0.35, TIER4: -0.50 };
 
@@ -411,12 +428,29 @@
             TIER4: { col: null, asc: true }
         };
 
+        // Note: added the 'tier' class property back so it applies your border-left CSS!
         const SECTION_META = [
             { key: 'TIER1', title: '🌐 Macro Indices & Relative Ratios', tier: 'tier1' },
             { key: 'TIER2', title: '🔷 Core Blue-Chips & Broad Tech', tier: 'tier2' },
             { key: 'TIER3', title: '🔶 High Volatility & Emerging Markets', tier: 'tier3' },
             { key: 'TIER4', title: '🔥 Hyper-Speculative & Wild Assets', tier: 'tier4' }
         ];
+
+        function submitPin() {
+            const input = document.getElementById("pin-input").value;
+            if (input) {
+                userPin = input;
+                loadDashboard();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("dashboard_pin");
+            userPin = "";
+            document.getElementById("auth-modal").style.display = "flex";
+            document.getElementById("dashboard-content").innerHTML = "";
+            document.getElementById("pin-input").value = "";
+        }
 
         function formatPct(val) {
             if (val === "" || val === null || isNaN(val)) return "-";
@@ -448,14 +482,13 @@
             const ma200 = item.ma200;
             const upLow = item.upLow;
 
-            // 1. Minervini Trend Check
+            // Minervini Trend Check
             if (price !== null && ma50 !== null && ma200 !== null && upLow !== null && offHigh !== null) {
                 if (price > ma50 && ma50 > ma200 && upLow >= 0.30 && offHigh >= -0.25) {
                     return "🚀 MINERVINI TREND";
                 }
             }
 
-            // 2. Standard Checks
             if (offHigh !== null && offHigh >= -0.05) return "🔴 FOMO zone";
             if (offHigh !== null && target !== null && offHigh <= target) {
                 return (price !== null && ma200 !== null && price > ma200) ? "🟢 Strong buy (Turnaround)" : "🩸 Bleeding (Watch)";
@@ -465,7 +498,6 @@
 
         function parseSheetData(data) {
             parsedData = [];
-            cheatSheetLines = [];
             let isCheatSheet = true;
             let currentTierKey = 'TIER1';
 
@@ -474,7 +506,7 @@
                 const ticker = row[1] ? row[1].toString().trim() : "";
 
                 if (name === "Asset Name") { isCheatSheet = false; return; }
-                if (isCheatSheet && name !== "") { cheatSheetLines.push(name); return; }
+                if (isCheatSheet) return;
 
                 if (name.includes("Core Blue-Chips")) { currentTierKey = 'TIER2'; return; }
                 if (name.includes("High Volatility")) { currentTierKey = 'TIER3'; return; }
@@ -576,6 +608,7 @@
 
                 const currentTargetPct = (tierOverrides[tierKey] * 100).toFixed(0);
 
+                // Note: Notice the addition of ${sec.tier} to apply your border-left styling
                 contentHtml += `
                 <div class="section-card ${sec.tier}">
                     <div class="section-header">
@@ -635,37 +668,99 @@
                 contentHtml += `</tbody></table></div></div>`;
             });
 
-            // Cheat Sheet
-            if (cheatSheetLines.length > 0) {
-                contentHtml += `<div class="cheatsheet-card">
-                    <div class="cheatsheet-title">📋 Strategy Rules & Execution Framework</div>`;
+            // Beautiful Hardcoded Visual Cheat Sheet (Matches UI Colors)
+            contentHtml += `
+            <div class="cheatsheet-card">
+                <div class="cheatsheet-title">📋 Strategy Rules & Execution Framework</div>
                 
-                cheatSheetLines.forEach(line => {
-                    if (line.includes("STRATEGY CHEAT SHEET")) return;
-                    if (/^\d\./.test(line)) contentHtml += `<div class="cheatsheet-rule">${line}</div>`;
-                    else if (line.startsWith("-")) contentHtml += `<div class="cheatsheet-subrule">${line}</div>`;
-                    else if (line.trim()) contentHtml += `<div class="cheatsheet-text">${line}</div>`;
-                });
+                <div class="cs-rule-title">1. The Target Triggers</div>
+                <div class="cs-grid" style="margin-bottom: 24px;">
+                    <div class="cs-box" style="border-left: 3px solid #22c55e;">
+                        <div class="cs-box-title">Macro Indices (-10%)</div>
+                        <div class="cs-box-desc">Broad market pullbacks (CSPX / EQQQ). Routine ISA deployment.</div>
+                    </div>
+                    <div class="cs-box" style="border-left: 3px solid #38bdf8;">
+                        <div class="cs-box-title">Core Blue-Chips (-20%)</div>
+                        <div class="cs-box-desc">Standard sector corrections for massive companies (Apple, MSFT).</div>
+                    </div>
+                    <div class="cs-box" style="border-left: 3px solid #fb923c;">
+                        <div class="cs-box-title">Volatile & EMs (-35%)</div>
+                        <div class="cs-box-desc">Deep structural crashes in individual niches or Emerging Markets.</div>
+                    </div>
+                    <div class="cs-box" style="border-left: 3px solid #ef4444;">
+                        <div class="cs-box-title">Wild Assets (-50%)</div>
+                        <div class="cs-box-desc">Crypto proxies (MSTR/COIN). Requires brutal capitulation before touching.</div>
+                    </div>
+                </div>
 
-                contentHtml += `</div>`;
-            }
+                <div class="cs-rule-title">2. Signal Execution (Action Guide)</div>
+                <div class="cs-grid">
+                    <div class="cs-box" style="background: rgba(139, 92, 246, 0.15); border: 1px solid #8b5cf6;">
+                        <div class="cs-box-title" style="color: #ddd6fe;">🚀 MINERVINI TREND: Add steady cash</div>
+                        <div class="cs-box-desc">Price > 50d > 200d MA. The stock is healthy, safe, and rising. Ride the institutional trend.</div>
+                    </div>
+                    <div class="cs-box" style="background: rgba(107, 114, 128, 0.15); border: 1px solid #6b7280;">
+                        <div class="cs-box-title" style="color: #cbd5e1;">⚪ NEUTRAL: Do strictly nothing</div>
+                        <div class="cs-box-desc">The uptrend has broken, but the asset hasn't crashed deep enough to be a bargain yet. Sit on your hands.</div>
+                    </div>
+                    <div class="cs-box" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444;">
+                        <div class="cs-box-title" style="color: #fca5a5;">🩸 BLEEDING: Get cash ready, but wait</div>
+                        <div class="cs-box-desc">Target drop hit, but it's a falling knife (Price < 200d MA). Do NOT buy yet! The panic is ongoing.</div>
+                    </div>
+                    <div class="cs-box" style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e;">
+                        <div class="cs-box-title" style="color: #86efac;">🟢 STRONG BUY: Buy heavily</div>
+                        <div class="cs-box-desc">The crash is over. Target hit AND price crossed back above the 200d MA. Institutional bottom confirmed.</div>
+                    </div>
+                    <div class="cs-box" style="background: rgba(249, 115, 22, 0.15); border: 1px solid #f97316;">
+                        <div class="cs-box-title" style="color: #fdba74;">🔴 FOMO ZONE: Overextended</div>
+                        <div class="cs-box-desc">Price is within 5% of 52W high but lacking the Minervini moving average momentum. Danger zone.</div>
+                    </div>
+                    <div class="cs-box" style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8;">
+                        <div class="cs-box-title" style="color: #bae6fd;">🔵 TECH ROTATION: Tech is cheap</div>
+                        <div class="cs-box-desc">Nasdaq / S&P 500 relative ratio dropped below its 200d MA. Shift incoming cash from broad market to Tech.</div>
+                    </div>
+                </div>
+            </div>`;
 
             document.getElementById('dashboard-content').innerHTML = contentHtml;
         }
 
         async function loadDashboard() {
+            if (!userPin) {
+                document.getElementById("auth-modal").style.display = "flex";
+                return;
+            }
+
+            document.getElementById("error-msg").style.display = "none";
+            document.getElementById("loading").style.display = "block";
+
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(`${API_URL}?pin=${encodeURIComponent(userPin)}`);
                 const data = await response.json();
-                document.getElementById('loading').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("error-msg").innerText = "❌ " + data.error;
+                    document.getElementById("error-msg").style.display = "block";
+                    return;
+                }
+
+                sessionStorage.setItem("dashboard_pin", userPin);
+                document.getElementById("auth-modal").style.display = "none";
+                document.getElementById("loading").style.display = "none";
+                
                 parseSheetData(data);
                 renderTables();
+
             } catch (error) {
-                document.getElementById('loading').innerHTML = "Error loading data. Check API URL.";
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("error-msg").innerText = "❌ Connection failed. Check Web App URL.";
+                document.getElementById("error-msg").style.display = "block";
             }
         }
 
-        loadDashboard();
+        // Auto-load if PIN is already stored
+        if (userPin) loadDashboard();
     </script>
 </body>
 </html>
